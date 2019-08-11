@@ -1,5 +1,7 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon
+from PyQt5 import QtCore
+from tkinter import *
 import cv2
 
 class Options(QWidget):
@@ -12,18 +14,24 @@ class Options(QWidget):
         browseButton.setIcon(QIcon('browse.png'))
         browseButton.setToolTip('Load image from your pc')
         browseButton.clicked.connect(self.browseImage)
+        browseButton.setMinimumHeight(50)
+        browseButton.setIconSize(QtCore.QSize(40,40))
         layout.addWidget(browseButton)
         capimageButton = QPushButton()
         capimageButton.setIcon(QIcon('webcam.png'))
         capimageButton.setToolTip("Capture image from your pc's webcam")
         capimageButton.clicked.connect(self.capImage)
+        capimageButton.setMinimumHeight(50)
+        capimageButton.setIconSize(QtCore.QSize(40, 40))
         layout.addWidget(capimageButton)
         capvideoButton = QPushButton()
         capvideoButton.setIcon(QIcon('videocap.png'))
         capvideoButton.setToolTip("Capture video from your pc's webcam")
         capvideoButton.clicked.connect(self.capVideo)
+        capvideoButton.setMinimumHeight(50)
+        capvideoButton.setIconSize(QtCore.QSize(40, 40))
         layout.addWidget(capvideoButton)
-        self.resize(300,400)
+        self.resize(300,350)
         self.setLayout(layout)
         self.show()
 
@@ -34,13 +42,21 @@ class Options(QWidget):
         cv2.imshow('image',image)
 
     def capImage(self):
-        print('capimage')
+        obj = Captureimage(root)
+        root.mainloop()
+
 
 
     def capVideo(self):
         print('capvideo')
 
+class Captureimage:
+    def __init__(self,root):
+        root.title('Capture Image')
+        root.geometry("250x300")
+
 if __name__=="__main__":
+    root = Tk()
     app = QApplication([])
     obj = Options()
     app.exec_()
