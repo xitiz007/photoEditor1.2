@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import messagebox
 import mysql.connector
+import scratch
 class Login:
     def __init__(self,root):
         root.geometry("300x400")
@@ -24,6 +25,10 @@ class Login:
     def signIn(self):
         if(not self.isAccount(self.userName.get(),self.password.get())):
             messagebox.showerror('Account not found','Invalid UserName/Password')
+        else:
+            print("valid user")
+            root.destroy()
+            scratch.call()
 
     def isAccount(self,userName,password):
         connection = mysql.connector.connect(host='localhost',user='root',password='aezakmi',database='photoeditor')
@@ -85,8 +90,6 @@ class Login:
                 return True
         connection.close()
         return False
-
-
 
 root = Tk()
 obj = Login(root)
