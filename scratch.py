@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon,QIntValidator
 from PyQt5 import QtCore
 from tkinter import *
 import cv2
@@ -31,6 +31,13 @@ class Options(QWidget):
         capvideoButton.setMinimumHeight(50)
         capvideoButton.setIconSize(QtCore.QSize(40, 40))
         layout.addWidget(capvideoButton)
+        scriptingButton = QPushButton()
+        scriptingButton.setToolTip("Photo Scripting")
+        scriptingButton.setMinimumHeight(50)
+        scriptingButton.setIcon(QIcon('script.png'))
+        scriptingButton.setIconSize(QtCore.QSize(40, 40))
+        scriptingButton.clicked.connect(self.photoScript)
+        layout.addWidget(scriptingButton)
         self.resize(300,350)
         self.setLayout(layout)
         self.show()
@@ -45,19 +52,74 @@ class Options(QWidget):
         obj = Captureimage(root)
         root.mainloop()
 
-
-
     def capVideo(self):
         print('capvideo')
+
+    def photoScript(self):
+        self.obj2 = photoScript()
 
 class Captureimage:
     def __init__(self,root):
         root.title('Capture Image')
         root.geometry("250x300")
 
-if __name__=="__main__":
+class photoScript(QWidget):
+    def __init__(self):
+        super().__init__()
+        vbox = QVBoxLayout()
+
+        label = QLabel()
+        label.setText("Convert multiple images from one format to another")
+        vbox.addWidget(label)
+        button = QPushButton()
+        button.setToolTip("Select Directory")
+        button.setIcon(QIcon('browse.png'))
+        button.setIconSize(QtCore.QSize(40,40))
+        vbox.addWidget(button)
+        path = QTextEdit()
+        path.setDisabled(True)
+        path.setToolTip("Path")
+        path.setMaximumHeight(40)
+        vbox.addWidget(path)
+        hbox = QHBoxLayout()
+        width = QLineEdit()
+        width.setValidator(QIntValidator())
+        width.setToolTip("Width")
+        width.setMinimumHeight(30)
+        hbox.addWidget(width)
+        height = QLineEdit()
+        height.setToolTip("Height")
+        height.setMinimumHeight(30)
+        height.setValidator(QIntValidator())
+        hbox.addWidget(height)
+        vbox.addLayout(hbox)
+        hbox2 = QHBoxLayout()
+        checkbox1 = QCheckBox()
+        checkbox1.setText(".JPG")
+        checkbox2 = QCheckBox()
+        checkbox2.setText(".PNG")
+        group = QButtonGroup()
+        group.addButton(checkbox1)
+        group.addButton(checkbox2)
+        hbox2.addItem(checkbox1)
+        hbox2.addItem(checkbox2)
+        vbox.addLayout(hbox2)
+
+        self.setWindowIcon(QIcon('script.png'))
+        self.setWindowTitle("Photo Scripting")
+        self.setLayout(vbox)
+        self.show()
+
+
+def call():
+    global root
     root = Tk()
     app = QApplication([])
     obj = Options()
     app.exec_()
 
+if __name__=="__main__":
+    root = Tk()
+    app = QApplication([])
+    obj = Options()
+    app.exec_()
