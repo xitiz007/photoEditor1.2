@@ -50,8 +50,22 @@ class Options(QWidget):
         cv2.imshow('image',image)
 
     def capImage(self):
-        obj = Captureimage(root)
-        root.mainloop()
+        video = cv2.VideoCapture(0)
+        while True:
+            tof , frame = video.read()
+            cv2.imshow('Camera',frame)
+            key = cv2.waitKey(1)
+            if key== 27:
+                break
+            elif key == ord('s'):
+                filter = "JPG (*.jpg);; PNG (*.png)"
+                name = QFileDialog.getSaveFileName(self, 'Save Image', '', filter)
+                if name:
+                    cv2.imwrite(name[0],frame)
+                    break
+        cv2.destroyAllWindows()
+
+
 
     def capVideo(self):
         filter = "AVI (*.avi)"
@@ -164,9 +178,6 @@ class photoScript(QWidget):
                         elif(self.radioButton2.isChecked()):
                              name = files[:files.index('.')] + ".png"
                         cv2.imwrite(self.saveFile+'/'+name,image)
-
-
-
         except:
             print("Error")
 
