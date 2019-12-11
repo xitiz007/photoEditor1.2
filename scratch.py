@@ -4,6 +4,7 @@ from PyQt5 import QtCore
 from tkinter import *
 import cv2
 import os
+import editor
 
 class Options(QWidget):
     def __init__(self):
@@ -46,9 +47,8 @@ class Options(QWidget):
     def browseImage(self):
         filter = "JPG (*.jpg);;PNG (*.png);;JPEG (*.jpeg)"
         name = QFileDialog.getOpenFileName(self,'Select Images','',filter)
-        image = cv2.imread(name[0])
-        cv2.imshow('image',image)
-
+        if name[0]:
+            self.obj = editor.Editor(name[0])
     def capImage(self):
         video = cv2.VideoCapture(0)
         while True:
@@ -101,7 +101,6 @@ class photoScript(QWidget):
     def __init__(self):
         super().__init__()
         vbox = QVBoxLayout()
-
         label = QLabel()
         label.setText("Convert multiple images from one format to another")
         vbox.addWidget(label)
