@@ -26,7 +26,6 @@ class Login:
         if(not self.isAccount(self.userName.get(),self.password.get())):
             messagebox.showerror('Account not found','Invalid UserName/Password')
         else:
-            print("valid user")
             root.destroy()
             scratch.call()
 
