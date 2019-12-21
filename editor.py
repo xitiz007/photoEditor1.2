@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QLabel,QApplication,QAction,QMainWindow,QPushButton,QFileDialog
+from PyQt5.QtWidgets import QLabel,QApplication,QAction,QMainWindow,QPushButton,QFileDialog,QTextEdit,QInputDialog
 from PyQt5.Qt import QIcon,QPixmap,QImage
 from PyQt5 import QtCore,QtGui
 from PIL import Image,ImageOps
@@ -21,9 +21,9 @@ class Editor(QMainWindow):
         self.show()
 
     def showImage(self):
-        self.image = self.image.convert("RGBA")
-        data  = self.image.tobytes('raw','RGBA')
-        img = QImage(data,self.image.size[0],self.image.size[1],QImage.Format_RGBA8888)
+        self.imageShow = self.image.convert("RGBA")
+        data  = self.imageShow.tobytes('raw','RGBA')
+        img = QImage(data,self.imageShow.size[0],self.imageShow.size[1],QImage.Format_RGBA8888)
         self.pixmap = QPixmap.fromImage(img)
         self.label.setPixmap(self.pixmap.scaled(self.label.size(),QtCore.Qt.IgnoreAspectRatio))
         self.label.setGeometry(200,100,900,500)
@@ -85,6 +85,27 @@ class Editor(QMainWindow):
         rightrotate.move(460,650)
         rightrotate.pressed.connect(self.rightRotate)
 
+        blackNwhite = QPushButton(self)
+        blackNwhite.setText("Black n White")
+        blackNwhite.move(1220,500)
+        blackNwhite.pressed.connect(self.BlackNWhite)
+
+        resize = QPushButton(self)
+        resize.setText("Resize")
+        resize.move(1220,100)
+        resize.pressed.connect(self.Resize)
+
+        crop = QPushButton(self)
+        crop.setText("Crop")
+        crop.move(1220,150)
+        crop.pressed.connect(self.Crop)
+
+
+        negativeButton = QPushButton(self)
+        negativeButton.setText("Negative")
+        negativeButton.move(1220,450)
+        negativeButton.pressed.connect(self.negative)
+
     def leftRotate(self):
         self.image = self.image.rotate(90)
         self.showImage()
@@ -128,6 +149,34 @@ class Editor(QMainWindow):
     def mirrorButton(self):
         self.image = ImageOps.mirror(self.image)
         self.showImage()
+
+    def BlackNWhite(self):
+        self.image = self.image.convert('L')
+        self.showImage()
+
+    def Resize(self):
+        width , pressed = QInputDialog.getInt(self,"Width","Width",1,1,int(self.image.width),1)
+        if pressed:
+            height , pressed = QInputDialog.getInt(self,"Height","Height",1,1,int(self.image.height),1)
+            if pressed:
+                self.image = self.image.resize((width,height),Image.ANTIALIAS)
+                self.showImage()
+
+    def negative(self):
+        self.image = ImageOps.invert(self.image)
+        self.showImage()
+
+    def Crop(self):
+        topX , pressed = QInputDialog.getInt(self,"Coordinate","TopX",1,1,int(self.image.width),1)
+        if pressed:
+            topY, pressed = QInputDialog.getInt(self, "Coordinate", "TopY", 1, 1, int(self.image.height), 1)
+            if pressed:
+                bottomX, pressed = QInputDialog.getInt(self, "Coordinate", "BottomX", 1, 1, int(self.image.width), 1)
+                if pressed:
+                    bottomY, pressed = QInputDialog.getInt(self, "Coordinate", "BottomY", 1, 1, int(self.image.height),1)
+                    if pressed:
+                        self.image = self.image.crop((topX,topY,bottomX,bottomY))
+                        self.showImage()
 
 if __name__ == '__main__':
     app = QApplication([])
