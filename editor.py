@@ -1,7 +1,7 @@
-from PyQt5.QtWidgets import QLabel,QApplication,QAction,QMainWindow,QPushButton,QFileDialog,QTextEdit,QInputDialog
-from PyQt5.Qt import QIcon,QPixmap,QImage
+from PyQt5.QtWidgets import QLabel,QApplication,QAction,QMainWindow,QPushButton,QFileDialog,QInputDialog,QSlider
+from PyQt5.Qt import QIcon,QPixmap,QImage,Qt
 from PyQt5 import QtCore,QtGui
-from PIL import Image,ImageOps
+from PIL import Image,ImageOps,ImageFilter,ImageDraw,ImageFont
 import description
 
 class Editor(QMainWindow):
@@ -90,6 +90,11 @@ class Editor(QMainWindow):
         blackNwhite.move(1220,500)
         blackNwhite.pressed.connect(self.BlackNWhite)
 
+        detailButton = QPushButton(self)
+        detailButton.setText("Detail")
+        detailButton.move(1220,550)
+        detailButton.pressed.connect(self.Detail)
+
         resize = QPushButton(self)
         resize.setText("Resize")
         resize.move(1220,100)
@@ -100,11 +105,67 @@ class Editor(QMainWindow):
         crop.move(1220,150)
         crop.pressed.connect(self.Crop)
 
+        doubleExposureButton = QPushButton(self)
+        doubleExposureButton.setText("Double Exposure")
+        doubleExposureButton.move(1220,200)
+        doubleExposureButton.pressed.connect(self.DoubleExposure)
+
+        pasteImage = QPushButton(self)
+        pasteImage.setText("Paste Image")
+        pasteImage.move(1220,250)
+        pasteImage.pressed.connect(self.PasteImage)
+
+        addText = QPushButton(self)
+        addText.setText("Add Text")
+        addText.move(1220,300)
+        addText.pressed.connect(self.AddText)
 
         negativeButton = QPushButton(self)
         negativeButton.setText("Negative")
         negativeButton.move(1220,450)
         negativeButton.pressed.connect(self.negative)
+
+        bLabel = QLabel(self)
+        bLabel.setText("Brightness")
+        bLabel.move(30,90)
+        self.brightnessSlider = QSlider(self)
+        self.brightnessSlider.setOrientation(Qt.Horizontal)
+        self.brightnessSlider.setTickInterval(1)
+        self.brightnessSlider.setMinimum(0)
+        self.brightnessSlider.setMaximum(100)
+        self.brightnessSlider.move(30,120)
+        self.brightnessSlider.valueChanged.connect(self.BrightnessSlider)
+
+        cLabel = QLabel(self)
+        cLabel.setText("Contrast")
+        cLabel.move(30,210)
+        self.contrastSlider = QSlider(self)
+        self.contrastSlider.setOrientation(Qt.Horizontal)
+        self.contrastSlider.setTickInterval(1)
+        self.contrastSlider.setMinimum(0)
+        self.contrastSlider.setMaximum(100)
+        self.contrastSlider.move(30,240)
+        self.contrastSlider.valueChanged.connect(self.BrightnessSlider)
+
+        blLabel = QLabel(self)
+        blLabel.setText("Blur")
+        blLabel.move(30,330)
+        self.blurSlider = QSlider(self)
+        self.blurSlider.setOrientation(Qt.Horizontal)
+        self.blurSlider.setTickInterval(1)
+        self.blurSlider.setMinimum(0)
+        self.blurSlider.setMaximum(100)
+        self.blurSlider.move(30,360)
+        self.blurSlider.valueChanged.connect(self.BlurSlider)
+
+    def BrightnessSlider(self):
+        pass
+
+    def ContrastSlider(self):
+        pass
+
+    def BlurSlider(self):
+        pass
 
     def leftRotate(self):
         self.image = self.image.rotate(90)
@@ -177,6 +238,60 @@ class Editor(QMainWindow):
                     if pressed:
                         self.image = self.image.crop((topX,topY,bottomX,bottomY))
                         self.showImage()
+
+    def Detail(self):
+        self.image = self.image.filter(ImageFilter.DETAIL)
+        self.showImage()
+
+    def DoubleExposure(self):
+        filter = "JPG (*.jpg);;PNG (*.png);;JPEG (*.jpeg)"
+        name = QFileDialog.getOpenFileName(self, 'Select Image', '', filter)
+        try:
+            image = Image.open(name[0])
+            if self.image.width > image.width :
+                self.image = self.image.resize((image.width , image.height),Image.ANTIALIAS)
+            else:
+                image = image.resize((self.image.width,self.image.height),Image.ANTIALIAS)
+            R,G,B = self.image.split()
+            r,g,b = image.split()
+            self.image = Image.merge("RGB",(R,g,B))
+            self.showImage()
+        except:
+            pass
+
+    def PasteImage(self):
+        filter = "JPG (*.jpg);;PNG (*.png);;JPEG (*.jpeg)"
+        name = QFileDialog.getOpenFileName(self, 'Select Images', '', filter)
+        try:
+            image = Image.open(name[0])
+            x , pressed = QInputDialog.getInt(self,"Coordinate","X",1,1,self.image.width,1)
+            if pressed:
+                y, pressed = QInputDialog.getInt(self, "Coordinate", "Y", 1, 1, self.image.height, 1)
+                if pressed:
+                    self.image.paste(image,(x,y))
+                    self.showImage()
+        except:
+            pass
+
+    def AddText(self):
+        text , pressed = QInputDialog.getText(self,"Text","Text")
+        if pressed:
+            X , pressed = QInputDialog.getInt(self,"Position","X",1,1,self.image.width,1)
+            if pressed:
+                Y, pressed = QInputDialog.getInt(self, "Position", "Y", 1, 1, self.image.height, 1)
+                if pressed:
+                    size , pressed = QInputDialog.getInt(self,"Size","Font Size",200,1,99999,1)
+                    if pressed:
+                        red, pressed = QInputDialog.getInt(self, "RGB", "Red Channel", 255, 1, 255, 1)
+                        if pressed:
+                            green, pressed = QInputDialog.getInt(self, "RGB", "Green Channel", 255, 1, 255, 1)
+                            if pressed:
+                                blue, pressed = QInputDialog.getInt(self, "RGB", "Blue Channel", 255, 1, 255, 1)
+                                if pressed:
+                                    draw = ImageDraw.Draw(self.image)
+                                    font = ImageFont.truetype("ABeeZee-Regular.otf", size)
+                                    draw.text((100, 100), "Hello World", (red, green, blue), font=font)
+                                    self.showImage()
 
 if __name__ == '__main__':
     app = QApplication([])
