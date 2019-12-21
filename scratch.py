@@ -40,9 +40,19 @@ class Options(QWidget):
         scriptingButton.setIconSize(QtCore.QSize(40, 40))
         scriptingButton.clicked.connect(self.photoScript)
         layout.addWidget(scriptingButton)
+        paint = QPushButton()
+        paint.setToolTip("Paint")
+        paint.setMinimumHeight(50)
+        paint.setIcon(QIcon('paint.png'))
+        paint.setIconSize(QtCore.QSize(40,40))
+        paint.clicked.connect(self.Paint)
+        layout.addWidget(paint)
         self.resize(300,350)
         self.setLayout(layout)
         self.show()
+
+    def Paint(self):
+        print("Paint")
 
     def browseImage(self):
         filter = "JPG (*.jpg);;PNG (*.png);;JPEG (*.jpeg)"
