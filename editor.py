@@ -337,8 +337,3 @@ class Editor(QMainWindow):
                                     font = ImageFont.truetype("ABeeZee-Regular.otf", size)
                                     draw.text((100, 100), "Hello World", (red, green, blue), font=font)
                                     self.showImage()
-
-if __name__ == '__main__':
-    app = QApplication([])
-    obj = Editor('C:/Users/kshit/OneDrive/तस्विरहरू/Saved pictures/fabian-grohs-dC6Pb2JdAqs-unsplash.jpg')
-    app.exec_()
