@@ -2,9 +2,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon,QIntValidator
 from PyQt5 import QtCore
 from tkinter import *
-import cv2
-import os
-import editor
+import cv2,os,editor
 
 class Options(QWidget):
     def __init__(self):
@@ -45,18 +43,43 @@ class Options(QWidget):
         paint.setMinimumHeight(50)
         paint.setIcon(QIcon('paint.png'))
         paint.setIconSize(QtCore.QSize(40,40))
-        paint.clicked.connect(self.Paint)
+        paint.clicked.connect(self.paintMethod)
         layout.addWidget(paint)
         self.resize(300,350)
         self.setLayout(layout)
         self.show()
 
-    def Paint(self):
-        print("Paint")
+    def paintMethod(self):
+        self.coordinates = []
+        filter = "JPG (*.jpg);;PNG (*.png);;JPEG (*.jpeg)"
+        name = QFileDialog.getOpenFileName(self,'Select Image','',filter)
+        self.img = cv2.imread(name[0])
+        cv2.imshow('image',self.img)
+        cv2.setMouseCallback('image',self.method)
+        while True:
+            key = cv2.waitKey(1)
+            if key == 27:
+                break
+            elif key == ord('s'):
+                filter = "JPG (*.jpg);;PNG (*.png);;JPEG (*.jpeg)"
+                fileName = QFileDialog.getSaveFileName(self, "Save Image", filter=filter)
+                cv2.imwrite(fileName[0],self.img)
+                break
+        cv2.destroyAllWindows()
+
+    def method(self,event, x, y, flags, param):
+        if event == cv2.EVENT_FLAG_LBUTTON:
+            self.coordinates.append((x, y))
+            if len(self.coordinates) > 1:
+                cv2.line(self.img, self.coordinates[len(self.coordinates) - 2], self.coordinates[len(self.coordinates) - 1], (255, 255, 255),
+                         8)
+                cv2.imshow('image', self.img)
+        elif event == cv2.EVENT_FLAG_RBUTTON:
+            self.coordinates.clear()
 
     def browseImage(self):
         filter = "JPG (*.jpg);;PNG (*.png);;JPEG (*.jpeg)"
-        name = QFileDialog.getOpenFileName(self,'Select Images','',filter)
+        name = QFileDialog.getOpenFileName(self,'Select Image','',filter)
         if name[0]:
             self.obj = editor.Editor(name[0])
     def capImage(self):
