@@ -1,8 +1,8 @@
-from PyQt5.QtWidgets import QLabel,QApplication,QAction,QMainWindow,QPushButton,QFileDialog,QInputDialog,QSlider
+from PyQt5.QtWidgets import QLabel,QApplication,QAction,QMainWindow,QPushButton,QFileDialog,QInputDialog,QSlider,QMessageBox
 from PyQt5.Qt import QIcon,QPixmap,QImage,Qt
 from PyQt5 import QtCore,QtGui
-from PIL import Image,ImageOps,ImageFilter,ImageDraw,ImageFont
-import description
+from PIL import Image,ImageOps,ImageFilter,ImageDraw,ImageFont,ImageEnhance
+import description,sys
 
 class Editor(QMainWindow):
     def __init__(self,path):
@@ -125,47 +125,76 @@ class Editor(QMainWindow):
         negativeButton.move(1220,450)
         negativeButton.pressed.connect(self.negative)
 
-        bLabel = QLabel(self)
-        bLabel.setText("Brightness")
-        bLabel.move(30,90)
+        self.bLabel = QLabel(self)
+        self.bLabel.setText("Brightness")
+        self.bLabel.move(30,90)
         self.brightnessSlider = QSlider(self)
         self.brightnessSlider.setOrientation(Qt.Horizontal)
         self.brightnessSlider.setTickInterval(1)
         self.brightnessSlider.setMinimum(0)
-        self.brightnessSlider.setMaximum(100)
+        self.brightnessSlider.setMaximum(20)
         self.brightnessSlider.move(30,120)
         self.brightnessSlider.valueChanged.connect(self.BrightnessSlider)
 
-        cLabel = QLabel(self)
-        cLabel.setText("Contrast")
-        cLabel.move(30,210)
+        self.conLabel = QLabel(self)
+        self.conLabel.setText("Contrast")
+        self.conLabel.move(30,210)
         self.contrastSlider = QSlider(self)
         self.contrastSlider.setOrientation(Qt.Horizontal)
         self.contrastSlider.setTickInterval(1)
         self.contrastSlider.setMinimum(0)
-        self.contrastSlider.setMaximum(100)
+        self.contrastSlider.setMaximum(20)
         self.contrastSlider.move(30,240)
-        self.contrastSlider.valueChanged.connect(self.BrightnessSlider)
+        self.contrastSlider.valueChanged.connect(self.ContrastSlider)
 
-        blLabel = QLabel(self)
-        blLabel.setText("Blur")
-        blLabel.move(30,330)
+        self.cLabel = QLabel(self)
+        self.cLabel.setText("Color")
+        self.cLabel.move(30,330)
+        self.colorSlider = QSlider(self)
+        self.colorSlider.setOrientation(Qt.Horizontal)
+        self.colorSlider.setTickInterval(1)
+        self.colorSlider.setMinimum(0)
+        self.colorSlider.setMaximum(20)
+        self.colorSlider.move(30,360)
+        self.colorSlider.valueChanged.connect(self.ColorSlider)
+
+        self.blLabel = QLabel(self)
+        self.blLabel.setText("Blur")
+        self.blLabel.move(30,450)
         self.blurSlider = QSlider(self)
         self.blurSlider.setOrientation(Qt.Horizontal)
         self.blurSlider.setTickInterval(1)
         self.blurSlider.setMinimum(0)
-        self.blurSlider.setMaximum(100)
-        self.blurSlider.move(30,360)
+        self.blurSlider.setMaximum(20)
+        self.blurSlider.move(30,480)
         self.blurSlider.valueChanged.connect(self.BlurSlider)
 
-    def BrightnessSlider(self):
-        pass
+        applyButton = QPushButton(self)
+        applyButton.setText("Apply")
+        applyButton.move(30,550)
+        applyButton.pressed.connect(self.Apply)
 
-    def ContrastSlider(self):
-        pass
+    def Apply(self):
+        enhancer = ImageEnhance.Brightness(self.image)
+        self.image = enhancer.enhance((self.brightnessSlider.value()*0.1))
+        enhancer = ImageEnhance.Contrast(self.image)
+        self.image = enhancer.enhance((self.contrastSlider.value()*0.1))
+        enhancer = ImageEnhance.Color(self.image)
+        self.image = enhancer.enhance((self.colorSlider.value()*0.1))
+        self.image = self.image.filter(ImageFilter.GaussianBlur(radius=self.blurSlider.value()))
+        self.showImage()
 
     def BlurSlider(self):
-        pass
+        self.blLabel.setText("Blur : "+str(self.blurSlider.value()))
+
+    def BrightnessSlider(self):
+        self.bLabel.setText("Brightness : "+str(self.brightnessSlider.value() * 0.1))
+
+    def ContrastSlider(self):
+        self.conLabel.setText("Contrast : " + str(self.contrastSlider.value() * 0.1))
+
+    def ColorSlider(self):
+        self.cLabel.setText("Color : "+ str(self.colorSlider.value() * 0.1))
 
     def leftRotate(self):
         self.image = self.image.rotate(90)
@@ -179,16 +208,32 @@ class Editor(QMainWindow):
         self.object = description.Description(self.image,self.path)
 
     def newMenu(self):
-        print("New Menu")
+        reply = QMessageBox.question(self, "Message Box", "Do you want to save this image?",
+                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            self.saveMenu()
+        filter = "JPG (*.jpg);;PNG (*.png);;JPEG (*.jpeg)"
+        name = QFileDialog.getOpenFileName(self, 'Select Images', '', filter)
+        self.image = Image.open(name[0])
+        self.showImage()
 
     def saveMenu(self):
-        filter = "JPG (*.jpg);;PNG (*.png);;JPEG (*.jpeg)"
-        fileName = QFileDialog.getSaveFileName(self,"Save Image",filter=filter)
-        self.image = self.image.convert("RGB")
-        self.image.save(fileName[0])
+        try:
+            filter = "JPG (*.jpg);;PNG (*.png);;JPEG (*.jpeg)"
+            fileName = QFileDialog.getSaveFileName(self,"Save Image",filter=filter)
+            self.image = self.image.convert("RGB")
+            self.image.save(fileName[0])
+        except:
+            pass
 
     def exitMenu(self):
-        print("Exit Menu")
+        reply = QMessageBox.question(self,"Message Box","Are you sure you want to quit?",QMessageBox.Yes|QMessageBox.No,QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            reply = QMessageBox.question(self, "Message Box", "Do you want to save your image??",
+                                         QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+            if reply == QMessageBox.Yes:
+                self.saveMenu()
+            sys.exit()
 
     def keyPressEvent(self, event):
         pass
