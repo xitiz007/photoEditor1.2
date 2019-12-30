@@ -335,5 +335,5 @@ class Editor(QMainWindow):
                                 if pressed:
                                     draw = ImageDraw.Draw(self.image)
                                     font = ImageFont.truetype("ABeeZee-Regular.otf", size)
-                                    draw.text((100, 100), "Hello World", (red, green, blue), font=font)
+                                    draw.text((100, 100), text, (red, green, blue), font=font)
                                     self.showImage()
