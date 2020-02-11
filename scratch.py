@@ -192,25 +192,27 @@ class photoScript(QWidget):
         self.setWindowTitle("Photo Scripting")
         self.setLayout(vbox)
         self.show()
-
+        
+        
     def convertButtonClicked(self):
         try:
-            if(self.file and self.saveFile):
-                path = self.file
-                path = path.replace('\\','/')
+            if(self.file and self.saveFile and self.width.text().isdigit() and self.height.text().isdigit()):
+                os.chdir(self.file)
                 for files in os.listdir(self.file):
-                    if(files.endswith(".jpg") or files.endswith(".png") or files.endswith(".jpeg")):
-                        name=""
-                        image = cv2.imread(path+'/'+files)
+                    ext = os.path.splitext(files)[1]
+                    if(ext == ".jpg" or ext == ".png" or ext == ".jpeg"):
+                        image = cv2.imread(files)
                         if(self.checkBox.isChecked()):
                             image = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
                         image = cv2.resize(image,(int(self.width.text()),int(self.height.text())))
+                        global name
                         if(self.radioButton1.isChecked()):
-                            name = files[:files.index('.')] + ".jpg"
+                            name = os.path.splitext(files)[0] + '.jpg'
                         elif(self.radioButton2.isChecked()):
-                             name = files[:files.index('.')] + ".png"
-                        cv2.imwrite(self.saveFile+'/'+name,image)
-        except:
+                            name = os.path.splitext(files)[0] + '.png'
+                        savepath = os.path.join(self.saveFile, name)
+                        cv2.imwrite(savepath,image)
+        except Exception:
             print("Error")
 
     def browseDirectory(self):
